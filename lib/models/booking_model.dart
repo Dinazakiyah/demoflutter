@@ -1,0 +1,85 @@
+class BookingModel {
+  final String? id;
+  final String? carId;
+  final String? userId;
+  final String? carName;
+  final String? carBrand;
+  final double? carPricePerDay;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final int? totalDays;
+  final double? totalAmount;
+  final String status;
+  final String? notes;
+  final DateTime? createdAt;
+  final Map<String, dynamic>? car;
+  final Map<String, dynamic>? user;
+
+  BookingModel({
+    this.id,
+    this.carId,
+    this.userId,
+    this.carName,
+    this.carBrand,
+    this.carPricePerDay,
+    this.startDate,
+    this.endDate,
+    this.totalDays,
+    this.totalAmount,
+    this.status = 'pending',
+    this.notes,
+    this.createdAt,
+    this.car,
+    this.user,
+  });
+
+  factory BookingModel.fromJson(Map<String, dynamic> json) {
+    return BookingModel(
+      id: json['_id'] as String?,
+      carId: json['car'] is String ? json['car'] as String? : (json['car'] as Map<String, dynamic>?)?['_id'],
+      userId: json['user'] is String ? json['user'] as String? : (json['user'] as Map<String, dynamic>?)?['_id'],
+      carName: json['car'] is Map ? (json['car'] as Map<String, dynamic>)['name'] : null,
+      carBrand: json['car'] is Map ? (json['car'] as Map<String, dynamic>)['brand'] : null,
+      carPricePerDay: json['car'] is Map ? ((json['car'] as Map<String, dynamic>)['pricePerDay'] as num?)?.toDouble() : null,
+      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate']) : null,
+      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate']) : null,
+      totalDays: json['totalDays'] as int?,
+      totalAmount: (json['totalAmount'] as num?)?.toDouble(),
+      status: json['status'] as String? ?? 'pending',
+      notes: json['notes'] as String?,
+      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
+      car: json['car'] is Map ? json['car'] as Map<String, dynamic> : null,
+      user: json['user'] is Map ? json['user'] as Map<String, dynamic> : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'car': carId,
+      'startDate': startDate?.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
+      if (notes != null && notes!.isNotEmpty) 'notes': notes,
+    };
+  }
+
+  String get statusLabel {
+    switch (status) {
+      case 'pending': return 'Menunggu';
+      case 'confirmed': return 'Dikonfirmasi';
+      case 'completed': return 'Selesai';
+      case 'cancelled': return 'Dibatalkan';
+      default: return status;
+    }
+  }
+
+  // ignore: unused_element
+  String get _statusColor {
+    switch (status) {
+      case 'pending': return 'orange';
+      case 'confirmed': return 'blue';
+      case 'completed': return 'green';
+      case 'cancelled': return 'red';
+      default: return 'grey';
+    }
+  }
+}
