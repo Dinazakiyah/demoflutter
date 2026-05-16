@@ -64,7 +64,7 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         child: Column(
           children: [
             DropdownButtonFormField(
-              value: paymentMethod,
+              initialValue: paymentMethod,
               items: const [
                 DropdownMenuItem(
                   value: 'transfer_bank',

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:demoflutter/models/car_model.dart';
-import 'package:demoflutter/screens/auth/booking_form_screen.dart';
 
 class CarCard extends StatelessWidget {
   final CarModel car;
