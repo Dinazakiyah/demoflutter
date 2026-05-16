@@ -7,6 +7,8 @@ import 'package:demoflutter/widgets/loading_indicator.dart';
 import 'package:demoflutter/screens/car/car_form_screen.dart';
 import 'package:demoflutter/services/auth_service.dart';
 import 'package:demoflutter/screens/auth/login_screen.dart';
+import 'package:demoflutter/screens/car/booking_list_screen.dart';
+import 'package:demoflutter/screens/car/payment_list_screen.dart';
 
 class CarListScreen extends StatefulWidget {
   const CarListScreen({super.key});
@@ -155,12 +157,39 @@ class _CarListScreenState extends State<CarListScreen> {
         backgroundColor: const Color(0xFF1A1A2E),
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-            tooltip: 'Logout',
+  IconButton(
+    icon: const Icon(Icons.book_online),
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const BookingListScreen(),
+        ),
+      );
+    },
+    tooltip: 'Booking',
+  ),
+
+  if (_role == 'admin')
+    IconButton(
+      icon: const Icon(Icons.payment),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PaymentListScreen(),
           ),
-        ],
+        );
+      },
+      tooltip: 'Verifikasi Pembayaran',
+    ),
+
+  IconButton(
+    icon: const Icon(Icons.logout),
+    onPressed: _logout,
+    tooltip: 'Logout',
+  ),
+],
       ),
       body: Column(
         children: [
@@ -265,3 +294,4 @@ class _CarListScreenState extends State<CarListScreen> {
     );
   }
 }
+

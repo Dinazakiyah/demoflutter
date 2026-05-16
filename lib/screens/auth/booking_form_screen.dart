@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:demoflutter/models/car_model.dart';
 import 'package:demoflutter/services/booking_service.dart';
 import 'package:demoflutter/widgets/loading_indicator.dart';
-import '../auth/booking_list_screen.dart';
+import 'package:demoflutter/screens/car/booking_list_screen.dart';
 
 class BookingFormScreen extends StatefulWidget {
   final CarModel car;
@@ -15,14 +15,24 @@ class BookingFormScreen extends StatefulWidget {
 class _BookingFormScreenState extends State<BookingFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _notesController = TextEditingController();
+  final _pickupLocationController = TextEditingController();
+  final _returnLocationController = TextEditingController();
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isLoading = false;
 
+
   int get _totalDays {
     if (_startDate == null || _endDate == null) return 0;
-    return _endDate!.difference(_startDate!).inDays;
+    final diff = _endDate!.difference(_startDate!).inDays;
+    return diff;
   }
+
+  bool get _isEndAfterStart {
+    if (_startDate == null || _endDate == null) return false;
+    return _endDate!.isAfter(_startDate!);
+  }
+
 
   double get _totalAmount => _totalDays * widget.car.pricePerDay;
 
@@ -64,21 +74,33 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       );
       return;
     }
-    if (_totalDays <= 0) {
+    if (!_isEndAfterStart || _totalDays <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tanggal selesai harus setelah tanggal mulai'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Tanggal selesai harus setelah tanggal mulai (minimal +1 hari)'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
+
     setState(() => _isLoading = true);
     try {
+      final carId = widget.car.id;
+      if (carId == null || carId.isEmpty) {
+        throw Exception('ID mobil tidak tersedia (widget.car.id null).');
+      }
+
       await BookingService.createBooking(
-        carId: widget.car.id!,
+        carId: carId,
         startDate: _startDate!,
         endDate: _endDate!,
+        pickupLocation: _pickupLocationController.text.trim(),
+        returnLocation: _returnLocationController.text.trim(),
         notes: _notesController.text.trim(),
       );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Booking berhasil dibuat!'), backgroundColor: Colors.green),
@@ -91,8 +113,9 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final msg = e.toString().replaceAll('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -155,7 +178,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                           Text(widget.car.name,
                               style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                           Text('${widget.car.brand} • ${widget.car.type.toUpperCase()}',
-                              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
                           const SizedBox(height: 4),
                           Text('Rp ${_formatPrice(widget.car.pricePerDay)}/hari',
                               style: const TextStyle(color: Colors.amber, fontSize: 15, fontWeight: FontWeight.bold)),
@@ -220,6 +243,54 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               ],
 
               const SizedBox(height: 20),
+              const Text('Pickup Location (wajib)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _pickupLocationController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Pickup location tidak boleh kosong';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Contoh: Kantor Jakarta Selatan',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              const Text('Return Location (wajib)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _returnLocationController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Return location tidak boleh kosong';
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  hintText: 'Contoh: Kantor Jakarta Selatan',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                ),
+              ),
+
+              const SizedBox(height: 20),
               const Text('Catatan (opsional)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               TextFormField(
@@ -236,6 +307,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   fillColor: Colors.grey.shade50,
                 ),
               ),
+
 
               const SizedBox(height: 30),
               SizedBox(

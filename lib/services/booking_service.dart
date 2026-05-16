@@ -44,6 +44,8 @@ class BookingService {
     required String carId,
     required DateTime startDate,
     required DateTime endDate,
+    required String pickupLocation,
+    required String returnLocation,
     String? notes,
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/bookings');
@@ -54,11 +56,14 @@ class BookingService {
       headers: headers,
       body: json.encode({
         'car': carId,
-        'startDate': startDate.toIso8601String(),
-        'endDate': endDate.toIso8601String(),
+        'startDate': startDate.toIso8601String().split('T').first,
+        'endDate': endDate.toIso8601String().split('T').first,
+        'pickupLocation': pickupLocation,
+        'returnLocation': returnLocation,
         if (notes != null && notes.isNotEmpty) 'notes': notes,
       }),
     );
+
 
     final body = json.decode(response.body);
 

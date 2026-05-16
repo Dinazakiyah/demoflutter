@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:demoflutter/models/car_model.dart';
+import 'package:demoflutter/screens/auth/booking_form_screen.dart';
 
 class CarCard extends StatelessWidget {
   final CarModel car;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final bool canBook;
 
   const CarCard({
     super.key,
@@ -13,7 +15,9 @@ class CarCard extends StatelessWidget {
     this.onTap,
     this.onEdit,
     this.onDelete,
+    required this.canBook,
   });
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +70,10 @@ class CarCard extends StatelessWidget {
                           Icons.settings,
                         ),
                         const SizedBox(width: 6),
-                        _buildChip('${car.seats}', Icons.airline_seat_recline_normal),
+                        _buildChip(
+                          '${car.seats}',
+                          Icons.airline_seat_recline_normal,
+                        ),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -118,6 +125,9 @@ class CarCard extends StatelessWidget {
                         minHeight: 36,
                       ),
                     ),
+                  // Catatan:
+                  // Booking button dihapus agar admin tidak bisa membuat booking.
+                  // Untuk user, tombol booking seharusnya di-render oleh parent.
                 ],
               ),
             ],
@@ -162,3 +172,4 @@ class CarCard extends StatelessWidget {
     return result;
   }
 }
+

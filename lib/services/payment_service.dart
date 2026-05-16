@@ -12,20 +12,34 @@ class PaymentService {
       'Authorization': 'Bearer $token',
     };
   }
+  
 
   static Future<List<PaymentModel>> getPayments() async {
-    final url = Uri.parse('${ApiConfig.baseUrl}/api/payments');
-    final headers = await _authHeaders();
-    final response = await http.get(url, headers: headers);
-    final body = json.decode(response.body);
+  final url = Uri.parse('${ApiConfig.baseUrl}/api/payments');
 
-    if (response.statusCode == 200) {
-      final List<dynamic> list = body['data']['payments'] ?? [];
-      return list.map((e) => PaymentModel.fromJson(e)).toList();
-    } else {
-      throw Exception(body['message'] ?? 'Gagal mengambil data pembayaran');
-    }
+  final token = await AuthService.getToken();
+
+  final response = await http.get(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  final body = jsonDecode(response.body);
+
+  if (response.statusCode == 200) {
+    final payments = body['data']['payments'];
+
+    return List<PaymentModel>.from(
+      payments.map(
+        (x) => PaymentModel.fromJson(x),
+      ),
+    );
+  } else {
+    throw Exception(body['message']);
   }
+}
 
   static Future<PaymentModel> getPaymentById(String id) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/payments/$id');
@@ -72,22 +86,34 @@ class PaymentService {
   }
 
   // Admin only
-  static Future<void> verifyPayment(String id, {String? adminNotes}) async {
+  static Future<void> verifyPayment(String id) async {
+    // Backend: PUT /api/payments/:id/verify (authorize('admin'))
     final url = Uri.parse('${ApiConfig.baseUrl}/api/payments/$id/verify');
-    final headers = await _authHeaders();
+    final token = await AuthService.getToken();
+
     final response = await http.put(
       url,
-      headers: headers,
-      body: json.encode({
-        if (adminNotes != null && adminNotes.isNotEmpty) 'adminNotes': adminNotes,
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({'status': 'success'}),
     );
-    final body = json.decode(response.body);
 
-    if (response.statusCode != 200) {
-      throw Exception(body['message'] ?? 'Gagal memverifikasi pembayaran');
+    // Beberapa backend bisa balas 200 tanpa body.
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return;
     }
+
+    final body = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+    if (body is Map && body['message'] != null) {
+      throw Exception(body['message']);
+    }
+    throw Exception(
+      'Gagal memverifikasi pembayaran (statusCode: ${response.statusCode}).',
+    );
   }
+
 
   static Future<void> refundPayment(String id, {String? adminNotes}) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/payments/$id/refund');
