@@ -257,6 +257,7 @@ class _CarListScreenState extends State<CarListScreen> {
                                 final car = _cars[index];
                                 return CarCard(
                                   car: car,
+                                  canBook: _role != 'admin',
                                   onEdit: _role == 'admin' ? () async {
                                     final result = await Navigator.push(
                                       context,
