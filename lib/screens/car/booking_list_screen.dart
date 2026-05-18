@@ -23,15 +23,20 @@ class _BookingListScreenState extends State<BookingListScreen> {
   }
 
   Future<void> loadData() async {
+    if (!mounted) return;
+
+    setState(() => isLoading = true);
     role = await AuthService.getRole() ?? 'user';
 
     final data = await BookingService.getBookings();
 
+    if (!mounted) return;
     setState(() {
       bookings = data;
       isLoading = false;
     });
   }
+
 
   Color statusColor(String status) {
     switch (status) {

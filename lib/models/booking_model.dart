@@ -34,24 +34,56 @@ class BookingModel {
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
+    final dynamic idValue = json['_id'] ?? json['id'];
+
+    String? normalizeId(dynamic v) {
+      if (v == null) return null;
+      if (v is String) return v;
+      return v.toString();
+    }
+
+    String? carIdValue;
+    final carJson = json['car'];
+    if (carJson is String) {
+      carIdValue = carJson;
+    } else if (carJson is Map) {
+      carIdValue = normalizeId(carJson['_id'] ?? carJson['id']);
+    }
+
+    String? userIdValue;
+    final userJson = json['user'];
+    if (userJson is String) {
+      userIdValue = userJson;
+    } else if (userJson is Map) {
+      userIdValue = normalizeId(userJson['_id'] ?? userJson['id']);
+    }
+
     return BookingModel(
-      id: json['_id'] as String?,
-      carId: json['car'] is String ? json['car'] as String? : (json['car'] as Map<String, dynamic>?)?['_id'],
-      userId: json['user'] is String ? json['user'] as String? : (json['user'] as Map<String, dynamic>?)?['_id'],
-      carName: json['car'] is Map ? (json['car'] as Map<String, dynamic>)['name'] : null,
-      carBrand: json['car'] is Map ? (json['car'] as Map<String, dynamic>)['brand'] : null,
-      carPricePerDay: json['car'] is Map ? ((json['car'] as Map<String, dynamic>)['pricePerDay'] as num?)?.toDouble() : null,
-      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate']) : null,
-      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate']) : null,
+      id: normalizeId(idValue),
+      carId: carIdValue,
+      userId: userIdValue,
+      carName: carJson is Map ? (carJson as Map<String, dynamic>)['name'] : null,
+      carBrand:
+          carJson is Map ? (carJson as Map<String, dynamic>)['brand'] : null,
+      carPricePerDay: carJson is Map
+          ? ((carJson as Map<String, dynamic>)['pricePerDay'] as num?)?.toDouble()
+          : null,
+      startDate:
+          json['startDate'] != null ? DateTime.tryParse(json['startDate']) : null,
+      endDate:
+          json['endDate'] != null ? DateTime.tryParse(json['endDate']) : null,
       totalDays: json['totalDays'] as int?,
       totalAmount: (json['totalAmount'] as num?)?.toDouble(),
       status: json['status'] as String? ?? 'pending',
       notes: json['notes'] as String?,
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
-      car: json['car'] is Map ? json['car'] as Map<String, dynamic> : null,
-      user: json['user'] is Map ? json['user'] as Map<String, dynamic> : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'])
+          : null,
+      car: carJson is Map ? carJson as Map<String, dynamic> : null,
+      user: userJson is Map ? userJson as Map<String, dynamic> : null,
     );
   }
+
 
   Map<String, dynamic> toJson() {
     return {

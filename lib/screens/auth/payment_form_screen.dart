@@ -33,25 +33,28 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         method: paymentMethod,
       );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pembayaran berhasil dikirim'),
-          ),
-        );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pembayaran berhasil dikirim'),
+        ),
+      );
 
-        Navigator.pop(context);
-      }
+      Navigator.pop(context);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

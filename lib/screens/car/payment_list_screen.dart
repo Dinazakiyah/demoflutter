@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:demoflutter/models/payment_model.dart';
+import 'package:demoflutter/services/auth_service.dart';
 import 'package:demoflutter/services/payment_service.dart';
+
 
 class PaymentListScreen extends StatefulWidget {
   const PaymentListScreen({super.key});
@@ -12,12 +14,23 @@ class PaymentListScreen extends StatefulWidget {
 class _PaymentListScreenState extends State<PaymentListScreen> {
   List<PaymentModel> payments = [];
   bool isLoading = true;
+  String role = 'user';
+
 
   @override
   void initState() {
     super.initState();
-    loadPayments();
+    _loadRoleAndPayments();
   }
+
+  Future<void> _loadRoleAndPayments() async {
+    final r = await AuthService.getRole();
+    if (!mounted) return;
+    setState(() => role = r ?? 'user');
+    await loadPayments();
+  }
+
+
 
   Future<void> loadPayments() async {
     try {
@@ -38,6 +51,7 @@ class _PaymentListScreenState extends State<PaymentListScreen> {
     try {
       await PaymentService.verifyPayment(id);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pembayaran berhasil diverifikasi'),
@@ -46,6 +60,7 @@ class _PaymentListScreenState extends State<PaymentListScreen> {
 
       loadPayments();
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString()),
@@ -53,6 +68,7 @@ class _PaymentListScreenState extends State<PaymentListScreen> {
       );
     }
   }
+
 
   Color statusColor(String status) {
     switch (status) {
@@ -107,13 +123,12 @@ class _PaymentListScreenState extends State<PaymentListScreen> {
 
                         const SizedBox(height: 10),
 
-                        if (payment.status == 'pending')
+                        if (role == 'admin' && payment.status == 'pending')
                           ElevatedButton(
-                            onPressed: () {
-                              verifyPayment(payment.id!);
-                            },
+                            onPressed: () => verifyPayment(payment.id!),
                             child: const Text('Verifikasi'),
                           ),
+
                       ],
                     ),
                   ),
