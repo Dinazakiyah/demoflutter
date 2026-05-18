@@ -9,6 +9,7 @@ import 'package:demoflutter/services/auth_service.dart';
 import 'package:demoflutter/screens/auth/login_screen.dart';
 import 'package:demoflutter/screens/car/booking_list_screen.dart';
 import 'package:demoflutter/screens/car/payment_list_screen.dart';
+import 'package:demoflutter/screens/auth/booking_form_screen.dart';
 
 class CarListScreen extends StatefulWidget {
   const CarListScreen({super.key});
@@ -156,7 +157,7 @@ class _CarListScreenState extends State<CarListScreen> {
         title: Text('Car Rental ${_role.toUpperCase()}'),
         backgroundColor: const Color(0xFF1A1A2E),
         foregroundColor: Colors.white,
-        actions: [
+ actions: [
   IconButton(
     icon: const Icon(Icons.book_online),
     onPressed: () {
@@ -170,19 +171,18 @@ class _CarListScreenState extends State<CarListScreen> {
     tooltip: 'Booking',
   ),
 
-  if (_role == 'admin')
-    IconButton(
-      icon: const Icon(Icons.payment),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const PaymentListScreen(),
-          ),
-        );
-      },
-      tooltip: 'Verifikasi Pembayaran',
-    ),
+  IconButton(
+    icon: const Icon(Icons.payment),
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const PaymentListScreen(),
+        ),
+      );
+    },
+    tooltip: 'Payment',
+  ),
 
   IconButton(
     icon: const Icon(Icons.logout),
@@ -256,21 +256,46 @@ class _CarListScreenState extends State<CarListScreen> {
                               itemBuilder: (context, index) {
                                 final car = _cars[index];
                                 return CarCard(
-                                  car: car,
-                                  canBook: _role != 'admin',
-                                  onEdit: _role == 'admin' ? () async {
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => CarFormScreen(car: car),
-                                      ),
-                                    );
-                                    if (result == true) {
-                                      _fetchCars(_searchController.text);
-                                    }
-                                  } : null,
-                                  onDelete: _role == 'admin' ? () => _deleteCar(car) : null,
-                                );
+                                car: car,
+
+                                canBook: _role != 'admin',
+
+                                onBooking: _role != 'admin'
+                                    ? () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => BookingFormScreen(
+                                              car: car,
+                                            ),
+                                          ),
+                                        );
+
+                                        if (mounted) {
+                                          _fetchCars(_searchController.text);
+                                        }
+                                      }
+                                    : null,
+
+                                onEdit: _role == 'admin'
+                                    ? () async {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => CarFormScreen(car: car),
+                                          ),
+                                        );
+
+                                        if (result == true) {
+                                          _fetchCars(_searchController.text);
+                                        }
+                                      }
+                                    : null,
+
+                                onDelete: _role == 'admin'
+                                    ? () => _deleteCar(car)
+                                    : null,
+                              );
                               },
                             ),
                           ),
