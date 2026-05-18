@@ -16,8 +16,6 @@ class PaymentFormScreen extends StatefulWidget {
 
 class _PaymentFormScreenState extends State<PaymentFormScreen> {
   bool isLoading = false;
-  // Match enum backend swagger:
-  // transfer_bank, kartu_kredit, kartu_debit, e_wallet, tunai
   String paymentMethod = 'transfer_bank';
 
 
@@ -27,6 +25,18 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
     });
 
     try {
+      if (widget.booking.id == null || widget.booking.id!.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ID booking tidak ditemukan. Silakan coba buat booking ulang.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // USER hanya membuat pembayaran, ADMIN memverifikasi via screen admin.
       await PaymentService.createPayment(
         bookingId: widget.booking.id!,
         amount: widget.booking.totalAmount ?? 0,
